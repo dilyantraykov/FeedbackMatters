@@ -10,8 +10,7 @@
 
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/jquery.min.js"></script>
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/kendo.all.min.js"></script>
-    <link rel="stylesheet" 
-    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    
     <style>
       a:link, a:visited, a:hover, a:active {
         text-decoration: none; 
@@ -80,7 +79,7 @@
           }
 
           $("#gridFilter").on('click', function() {
-           
+            var items = $("#products").data().kendoMultiSelect.value();
             var filter = { logic: "and", filters: [] };
             var fieldFilters = $.map(items, function (item) {            
               return {
