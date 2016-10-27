@@ -11,9 +11,12 @@
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/jquery.min.js"></script>
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/kendo.all.min.js"></script>
     <style>
+      a:link, a:visited, a:hover, a:active {
+        text-decoration: none; 
+        color: grey;
+      }
       
       .k-edit-form-container {
-
         width: 100%;
       }
 
@@ -112,6 +115,7 @@
                   IsInaccurateContent: {type: "boolean", editable: false},
                   IsInsufficientInformation: {type: "boolean", editable: false},
                   IsOutdatedSample: {type: "boolean", editable: false},
+                  TextErrors: {type: "boolean", editable: false},
                   IsWrongInformation: {type: "boolean", editable: false},
                   Product: {type: "string", editable: false},
                   ProductArea: {type: "string", editable: false},
@@ -151,6 +155,16 @@
               }            
 
             },
+            cancel: function(e) {
+              var rows = e.sender.tbody.children();
+
+              for (var j = 0; j < rows.length; j++) {
+                var row = $(rows[j]);
+                var dataItem = e.sender.dataItem(row);
+                row.addClass(dataItem.get("Status"));
+
+              }
+            },
             dataBound: function(e){
               var rows = e.sender.tbody.children();
 
@@ -167,39 +181,47 @@
             sortable: true,
             pageable: true,
             columns: [
-              {field: "Product", filterable: false},
-              {field: "ProductArea"}, 
+              {field: "CreatedAt"},
+              //{field: "Product", filterable: false},
+              //{field: "ProductArea"}, 
               {field: "Status", editor: statusDropDownEditor
               },
-              {field: "IsInaccurateContent", title: "Inaccurate <br/> Content", template: addTrueFalseIconClass("IsInaccurateContent"),
-               headerAttributes: {
-                title: "Code samples are inaccurate/outdated."
-              	}
-              },
-              {field: "IsInsufficientInformation", title: "Insufficient <br/> Information",
-               headerAttributes: {
-                title: "I expected to find more information."
-              	}
-              },
-              {field: "IsOutdatedSample", title: "Outdated <br/> Sample", 
-               headerAttributes: {
-                title: "Content is inaccurate / outdated."
-              	}
-              },
-              {field: "IsWrongInformation", title: "Wrong <br/> Information",headerAttributes: {
-                title: "I expected to find other information."
-              }},
-              {field: "YesNoFeedback", title: "Yes/No <br/> Feedback"},
+              {field: "Path", template:"<a href='#= Path #'> #= Path # </div>"},
               {field: "Text", width: "200px", template:"<div class='customClass'> #= Text # </div>"}, 
               {field: "Comments"}, 
+              // {field: "IsInaccurateContent", title: "Inaccurate <br/> Content", template: addTrueFalseIconClass("IsInaccurateContent"),
+              //  headerAttributes: {
+              //   title: "Code samples are inaccurate/outdated."
+              // 	}
+              // },
+              // {field: "TextErrors", title: "Text <br/> Errors", template: addTrueFalseIconClass("TextErrors"),
+              //  headerAttributes: {
+              //   title: "There are some text errors in the article."
+              // 	}
+              // },
+              // {field: "IsInsufficientInformation", title: "Insufficient <br/> Information",
+              //  headerAttributes: {
+              //   title: "I expected to find more information."
+              // 	}
+              // },
+              // {field: "IsOutdatedSample", title: "Outdated <br/> Sample", 
+              //  headerAttributes: {
+              //   title: "Content is inaccurate / outdated."
+              // 	}
+              // },
+              // {field: "IsWrongInformation", title: "Wrong <br/> Information",headerAttributes: {
+              //   title: "I expected to find other information."
+              // }},
+              // {field: "YesNoFeedback", title: "Yes/No <br/> Feedback"},
+              //{field: "Text", width: "200px", template:"<div class='customClass'> #= Text # </div>"}, 
+              //{field: "Comments"}, 
 
               //{ field: "CommentToBeAdded", editor: textAreaEditor},
-              {field: "Path", template:"<a href='#= Path #'> #= Path # </div>"},
-              {field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px"},
-
-              {title: "Send Email", template: "<a href='mailto:#= Email #'>Reply to #= Email #</a>"},
-              {field: "ModifiedByUser"},
-
+              //{field: "Path", template:"<a href='#= Path #'> #= Path # </div>"},
+              {field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px", hidden: true},
+              {title: "ModifiedByUser", field: "ModifiedByUser", hidden: true},
+              //{title: "Send Email", template: "<a href='mailto:#= Email #'>Reply to #= Email #</a>"},
+              {template: "<span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser #</span>", title: "Modified"},
               {command: [{ name: "edit", text: "Manage" }], title: "&nbsp;", width: "100px" }
             ]
           });
