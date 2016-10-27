@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="http://demos.telerik.com/kendo-ui/grid/everlive">
+    <style>html { font-size: 14px; font-family: Arial, Helvetica, sans-serif; }</style>
+    <title></title>
+    <link rel="stylesheet" href="//kendo.cdn.telerik.com/2016.3.914/styles/kendo.common-bootstrap.min.css" />
+    <link rel="stylesheet" href="//kendo.cdn.telerik.com/2016.3.914/styles/kendo.metro.min.css" />
+   
+
+    <script src="//kendo.cdn.telerik.com/2016.3.914/js/jquery.min.js"></script>
+    <script src="//kendo.cdn.telerik.com/2016.3.914/js/kendo.all.min.js"></script>
+    <style>
+      
+      .k-edit-form-container {
+
+        width: 100%;
+      }
+
+      .k
+
+      .customClass{
+        white-space: nowrap;
+        width: 100%;                   
+        overflow: hidden; 
+        text-overflow: ellipsis;
+      }
+
+      .k-grid tr {
+        height: 40px;
+      }
+
+      .textAreaEditor{
+        width: 167px;
+        height: 65px;     
+      }
+      .InProgress {
+        background-color:	#FFFFE0;
+      }
+      .New {
+        background-color:#F08080;
+      }
+      .Completed {
+        background-color:#90EE90;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="example">
+      <button id="savePageSettings" class="k-button" style="float:right;">Save Page Settings</button>
+      <button id="loadPageSettings" class="k-button" style="float:right;">Load Page Settings</button>
+      <br/><br/><br/>
+      <select id="products"></select>
+      <br/>
+      <button id="gridFilter" class="k-button k-primary">Filter Grid</button>
+      <br/><br/>
+      <div id="grid"></div>
+      <script src="../content/shared/js/everlive.all.js"></script>
+      <script>
+        var everlive = new Everlive({
+          apiKey: "lzrla9wpuk636rdd",
+          scheme: "http"
+        });
+
+        $(document).ready(function() {
+          $("#gridFilter").on('click', function() {
+            var items = $("#products").data().kendoMultiSelect.value();
+            var filter = { logic: "and", filters: [] };
+            var fieldFilters = $.map(items, function (item) {            
+              return {
+                field: "Product",
+                operator: "eq",
+                value: item
+              };
+            });
+
+
+            if (fieldFilters.length) {
+
+              filter.filters.push({
+                logic: "or",
+                filters: fieldFilters
+              });
+              dataSource.filter(filter);
+            }
+          });
+
+
+          $("#products").kendoMultiSelect({
+            placeholder: "Select products...",
+            dataSource: {
+              data: ["Telerik Platform","ASP.NET AJAX"]
+            }
+          });
+          // initialize Everlive application with application API key
+          var dataSource = new kendo.data.DataSource({
+            type: "everlive",
+            transport: {
+              // binding to the FeedbackEntryTest type in Everlive
+              typeName: "FeedbackEntryTest"
+            },
+            schema: {
+              model: {
+                id: "Id",
+                fields: {
+                  // default Everlive fields
+                  CreatedBy:  { type: "string" },
+                  CreatedAt:  { type: "date" },
+                  ModifiedAt: { type: "date", editable: false },
+
+                  // type fields
+                  Comments: {type: "text",  editable: false},
+                  Text: {type: "text", editable: false},         
+                  IsInaccurateContent: {type: "boolean", editable: false},
+                  IsInsufficientInformation: {type: "boolean", editable: false},
+                  IsOutdatedSample: {type: "boolean", editable: false},
+                  IsWrongInformation: {type: "boolean", editable: false},
+                  Product: {type: "string", editable: false},
+                  ProductArea: {type: "string", editable: false},
+                  YesNoFeedback: {type: "boolean" , editable: false},
+                  Status: {type: "text", editable: true},
+                  ModifiedByUser: {type: "text"}
+                }
+              }
+            },
+            pageSize: 5,
+          });
+
+
+          $("#grid").kendoGrid({
+            columnMenu: true,
+            dataSource: dataSource,
+            height: 430,
+            editable: {
+              //template: kendo.template($("#popup-editor").html()),
+              window: {
+                width: "500px"
+              },
+              mode: "popup"
+            },
+            edit: function(e) {              
+              var inputEl = $("label[for='Comments']");
+              var newInput = $("<div class='k-edit-label'><label>New Comment</label></div><div class='k-edit-field'><input class='k-input k-textbox' name='newComment' /></div>");
+              inputEl.parent().next().after(newInput);             
+            },
+            save: function(e) {
+              var newCommentValue = e.container.find("input[name='newComment']").val();
+              if(newCommentValue != "") {
+                var newFormattedComment = kendo.format('{0:dd/MM/yyyy}', new Date()) + " " + newCommentValue;
+                e.model.Comments = e.model.Comments == undefined ? newFormattedComment : e.model.Comments  + "; " + newFormattedComment;
+                e.model.ModifiedByUser = "New User";
+                e.model.dirty = true;
+              }            
+
+            },
+            dataBound: function(e){
+              var rows = e.sender.tbody.children();
+
+              for (var j = 0; j < rows.length; j++) {
+                var row = $(rows[j]);
+                var dataItem = e.sender.dataItem(row);
+                row.addClass(dataItem.get("Status"));
+
+              }
+            },
+            resizable: true,
+            filterable: true,
+            reorderable: true,             	
+            sortable: true,
+            pageable: true,
+            columns: [
+              {field: "Product", filterable: false},
+              {field: "ProductArea"}, 
+              {field: "Status", editor: statusDropDownEditor
+              },
+              {field: "IsInaccurateContent", title: "Inaccurate <br/> Content", template: addTrueFalseIconClass("IsInaccurateContent"),
+               headerAttributes: {
+                title: "Code samples are inaccurate/outdated."
+              	}
+              },
+              {field: "IsInsufficientInformation", title: "Insufficient <br/> Information",
+               headerAttributes: {
+                title: "I expected to find more information."
+              	}
+              },
+              {field: "IsOutdatedSample", title: "Outdated <br/> Sample", 
+               headerAttributes: {
+                title: "Content is inaccurate / outdated."
+              	}
+              },
+              {field: "IsWrongInformation", title: "Wrong <br/> Information",headerAttributes: {
+                title: "I expected to find other information."
+              }},
+              {field: "YesNoFeedback", title: "Yes/No <br/> Feedback"},
+              {field: "Text", width: "200px", template:"<div class='customClass'> #= Text # </div>"}, 
+              {field: "Comments"}, 
+
+              //{ field: "CommentToBeAdded", editor: textAreaEditor},
+              {field: "Path", template:"<a href='#= Path #'> #= Path # </div>"},
+              {field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px"},
+
+              {title: "Send Email", template: "<a href='mailto:#= Email #'>Reply to #= Email #</a>"},
+              {field: "ModifiedByUser"},
+
+              {command: [{ name: "edit", text: "Manage" }], title: "&nbsp;", width: "100px" }
+            ]
+          });
+        });
+
+
+        function statusDropDownEditor(container, options) {
+          $('<input required name="' + options.field + '"/>')
+            .appendTo(container)
+            .kendoDropDownList({
+            dataSource: {
+              data: ["New", "InProgress", "Completed"]
+            }
+          });
+        }
+
+        function textAreaEditor(container, options) {
+          $('<textarea class="textAreaEditor" name="' + options.field + '"></textarea>').appendTo(container);           
+        };
+        
+        function addTrueFalseIconClass(fieldName){
+         	return "<span class='#if(" + fieldName + "){# #} else{#k-icon k-i-close#} #'></span>";
+        }
+
+
+      </script>
+
+      <!--<![endif]-->
+    </div>
+
+
+
+  </body>
+</html>
