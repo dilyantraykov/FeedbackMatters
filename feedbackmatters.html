@@ -10,6 +10,8 @@
 
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/jquery.min.js"></script>
     <script src="//kendo.cdn.telerik.com/2016.3.914/js/kendo.all.min.js"></script>
+    <link rel="stylesheet" 
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <style>
       a:link, a:visited, a:hover, a:active {
         text-decoration: none; 
@@ -48,8 +50,8 @@
   </head>
   <body>
     <div id="example">
-      <button id="savePageSettings" class="k-button" style="float:right;">Save Page Settings</button>
-      <button id="loadPageSettings" class="k-button" style="float:right;">Load Page Settings</button>
+      <button id="save" class="k-button" style="float:right;">Save Page Settings</button>
+      <button id="load" class="k-button" style="float:right;">Load Page Settings</button>
       <br/><br/><br/>
       <select id="products"></select>
       <br/>
@@ -64,8 +66,21 @@
         });
 
         $(document).ready(function() {
+         
+          $("#products").kendoMultiSelect({
+            placeholder: "Select products...",
+            dataSource: {
+              data: ["Telerik Platform","ASP.NET AJAX", "Reporting", "Kendo UI", "Test Studio", "WPF & Silverlight"]
+            }
+          });
+
+          var items = $("#products").data().kendoMultiSelect.value();
+          if (items.length == 0) {
+            $("#products").data().kendoMultiSelect.value(["Telerik Platform", "ASP.NET AJAX"]);
+          }
+
           $("#gridFilter").on('click', function() {
-            var items = $("#products").data().kendoMultiSelect.value();
+           
             var filter = { logic: "and", filters: [] };
             var fieldFilters = $.map(items, function (item) {            
               return {
@@ -82,17 +97,12 @@
                 logic: "or",
                 filters: fieldFilters
               });
-              dataSource.filter(filter);
+              $("#grid").data().kendoGrid.dataSource.filter(filter);
             }
           });
 
 
-          $("#products").kendoMultiSelect({
-            placeholder: "Select products...",
-            dataSource: {
-              data: ["Telerik Platform","ASP.NET AJAX"]
-            }
-          });
+          
           // initialize Everlive application with application API key
           var dataSource = new kendo.data.DataSource({
             type: "everlive",
@@ -106,7 +116,7 @@
                 fields: {
                   // default Everlive fields
                   CreatedBy:  { type: "string" },
-                  CreatedAt:  { type: "date" },
+                  CreatedAt:  { type: "date", editable: false },
                   ModifiedAt: { type: "date", editable: false },
 
                   // type fields
@@ -133,8 +143,7 @@
             columnMenu: true,
             dataSource: dataSource,
             height: 430,
-            editable: {
-              //template: kendo.template($("#popup-editor").html()),
+            editable: {           
               window: {
                 width: "500px"
               },
@@ -181,7 +190,7 @@
             sortable: true,
             pageable: true,
             columns: [
-              {field: "CreatedAt"},
+              {field: "CreatedAt", format: "{0:MM/dd/yyyy}"},
               //{field: "Product", filterable: false},
               //{field: "ProductArea"}, 
               {field: "Status", editor: statusDropDownEditor
@@ -218,12 +227,27 @@
 
               //{ field: "CommentToBeAdded", editor: textAreaEditor},
               //{field: "Path", template:"<a href='#= Path #'> #= Path # </div>"},
-              {field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px", hidden: true},
-              {title: "ModifiedByUser", field: "ModifiedByUser", hidden: true},
+              { field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px", hidden: true},
+              { title: "ModifiedByUser", field: "ModifiedByUser", hidden: true},
               //{title: "Send Email", template: "<a href='mailto:#= Email #'>Reply to #= Email #</a>"},
-              {template: "<span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser #</span>", title: "Modified"},
-              {command: [{ name: "edit", text: "Manage" }], title: "&nbsp;", width: "100px" }
+              { template: "<span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span>", title: "Modified"},
+              { command: [{ name: "edit", text: "Manage" }], title: "&nbsp;", width: "100px" }
             ]
+          });
+
+          var grid = $("#grid").data("kendoGrid");
+
+          $("#save").click(function (e) {
+              e.preventDefault();
+              localStorage["kendo-grid-options"] = kendo.stringify(grid.getOptions());
+          });
+
+          $("#load").click(function (e) {
+              e.preventDefault();
+              var options = localStorage["kendo-grid-options"];
+              if (options) {
+                  grid.setOptions(JSON.parse(options));
+              }
           });
         });
 
