@@ -31,10 +31,15 @@
       .k-grid tr {
         height: 40px;
       }
-
+      .textAreaEditor,
+      .textAreaEditorDisabled{
+        height: 65px !important;     
+      }
       .textAreaEditor{
-        width: 167px;
-        height: 65px;     
+        width: 91.2%;
+      }
+      .textAreaEditorDisabled{
+         width: 90%;   
       }
       .InProgress {
         background-color:	#FFFFE0;
@@ -45,6 +50,15 @@
       .Completed {
         background-color:#90EE90;
       }
+      .gridEditPopupTable{
+          width: 600px; 
+          border-spacing: 5px;
+        }
+
+      .commentTextArea{
+         width:95%;
+         height: 80px !important;
+       }
     </style>
   </head>
   <body>
@@ -143,9 +157,7 @@
             dataSource: dataSource,
             height: 430,
             editable: {           
-              window: {
-                width: "500px"
-              },
+              template: kendo.template($("#popup-editor").html()),
               mode: "popup"
             },
             edit: function(e) {              
@@ -154,9 +166,10 @@
               inputEl.parent().next().after(newInput);             
             },
             save: function(e) {
-              var newCommentValue = e.container.find("input[name='newComment']").val();
+              var modifyUser = "New User";
+              var newCommentValue = e.container.find("textarea[id='newComment']").val();
               if(newCommentValue != "") {
-                var newFormattedComment = kendo.format('{0:dd/MM/yyyy}', new Date()) + " " + newCommentValue;
+                var newFormattedComment = "[" + kendo.format('{0:dd/MM/yyyy}', new Date()) + "] " + modifyUser + ": " + newCommentValue;
                 e.model.Comments = e.model.Comments == undefined ? newFormattedComment : e.model.Comments  + "; " + newFormattedComment;
                 e.model.ModifiedByUser = "New User";
                 e.model.dirty = true;
@@ -269,9 +282,72 @@
          	return "<span class='#if(" + fieldName + "){# #} else{#k-icon k-i-close#} #'></span>";
         }
 
+        function addTrueFalseIconClassPopup(fieldName){
+          var iconClass = fieldName ? 'k-icon k-i-close' : '';
+          return "<span class='" + iconClass + "'></span>";
+        }
+
 
       </script>
-
+      <script type="text/x-kendo-template" id="popup-editor">    
+				<table class='gridEditPopupTable'>
+           <tr>
+              <td colspan='2'>Product:</td>
+              <td colspan='2'>#=Product#</td>
+            </tr>
+          <tr>
+              <td colspan='2'>Product Area:</td>
+              <td colspan='2'>#=ProductArea#</td>
+          </tr>
+          <tr>
+            	<td>IsInaccurateContent:</td> 
+              <td>#=addTrueFalseIconClassPopup(IsInaccurateContent)#</td>		
+              <td>IsInsufficientInformation:</td> 
+              <td>#=addTrueFalseIconClassPopup(IsInsufficientInformation)#</td>			
+         	</tr>
+             <tr>
+              <td>IsOutdatedSample:</td> 
+              <td>#=addTrueFalseIconClassPopup(IsOutdatedSample)#</td>		
+               <td>IsWrongInformation:</td> 
+              <td>#=addTrueFalseIconClassPopup(IsWrongInformation)#</td>	
+         	</tr>
+          <tr>	
+              <td>YesNoFeedback:</td> 
+              <td>#=addTrueFalseIconClassPopup(YesNoFeedback)#</td>		
+              <td>missing field:</td> 
+              <td></td>		
+          </tr>
+          <tr>
+              <td colspan='2'>Text:</td> 
+              <td colspan='2'>#=Text#</td>			
+          </tr>
+          <tr>
+              <td colspan='2'>Path:</td> 
+              <td colspan='2'>#=Path#</td>			
+          </tr>
+          <tr>
+              <td colspan='2'>Comments:</td> 
+              <td colspan='2'><textarea class="textAreaEditorDisabled" disabled="disabled">#=Comments#</textarea></td>			
+          </tr>
+          <tr>
+              <td colspan='2'>New Comments:</td> 
+              <td colspan='2'><textarea class="k-textbox textAreaEditor" id="newComment"/></td>			
+          </tr>
+          <tr>
+              <td colspan='2'>Status:</td> 
+              <td colspan='2'><input data-role="dropdownlist" data-source='["New", "InProgress", "Completed"]' data-bind="value:Status" style="width: 30%;"/>
+      				</td>			
+          </tr>
+          <tr>
+              <td colspan='2'>Send Email</td> 
+              <td colspan='2'>#=Email#</td>			
+          </tr>
+          <tr>
+              <td colspan='2'>Last Modified:</td> 
+              <td colspan='2'><span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span></td>			
+          </tr>
+        </table>
+    </script>
       <!--<![endif]-->
     </div>
 
