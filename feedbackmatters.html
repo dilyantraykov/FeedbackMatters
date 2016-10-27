@@ -59,13 +59,19 @@
       }
       .gridEditPopupTable{
           width: 600px; 
-          border-spacing: 5px;
+          border-spacing: 8px;
+        }
+        .gridEditPopupTable tr td {
+          min-width: 180px;
         }
 
       .commentTextArea{
          width:95%;
          height: 80px !important;
        }
+       .hiddenRow{
+         display: none;
+       }       
     </style>
   </head>
   <body>
@@ -209,7 +215,7 @@
             sortable: true,
             pageable: true,
             columns: [
-              {field: "CreatedAt", format: "{0:MM/dd/yyyy}"},
+              {field: "CreatedAt", format: "{0:MM/dd/yyyy}", title: "Created"},
               //{field: "Product", filterable: false},
               //{field: "ProductArea"}, 
               {field: "Status", editor: statusDropDownEditor
@@ -249,7 +255,7 @@
               { field: "ModifiedAt", format: "{0:MM/dd/yyyy}", width: "100px", hidden: true},
               { title: "ModifiedByUser", field: "ModifiedByUser", hidden: true},
               //{title: "Send Email", template: "<a href='mailto:#= Email #'>Reply to #= Email #</a>"},
-              { template: "<span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span>", title: "Modified"},
+              { template: "<span>#= kendo.format('{0:dd/MM/yyyy}', ModifiedAt) #, #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span>", title: "Last Modified"},
               { command: [{ name: "edit", text: "Manage" }], title: "&nbsp;", width: "100px" }
             ]
           });
@@ -299,59 +305,65 @@
       <script type="text/x-kendo-template" id="popup-editor">    
 				<table class='gridEditPopupTable'>
            <tr>
-              <td colspan='2'>Product:</td>
-              <td colspan='2'>#=Product#</td>
+              <td >Product:</td>
+              <td >#=Product#</td>
             </tr>
           <tr>
-              <td colspan='2'>Product Area:</td>
-              <td colspan='2'>#=ProductArea#</td>
+              <td >Product Area:</td>
+              <td >#=ProductArea#</td>
           </tr>
           <tr>
-            	<td>IsInaccurateContent:</td> 
+              <td>Inaccurate Content:</td> 
               <td>#=addTrueFalseIconClassPopup(IsInaccurateContent)#</td>		
-              <td>IsInsufficientInformation:</td> 
+          </tr>
+          <tr>
+              <td>Insufficient Information:</td> 
               <td>#=addTrueFalseIconClassPopup(IsInsufficientInformation)#</td>			
          	</tr>
-             <tr>
-              <td>IsOutdatedSample:</td> 
-              <td>#=addTrueFalseIconClassPopup(IsOutdatedSample)#</td>		
-               <td>IsWrongInformation:</td> 
+          <tr>
+              <td>Outdated Sample:</td> 
+              <td>#=addTrueFalseIconClassPopup(IsOutdatedSample)#</td>	
+           </tr>
+          <tr>	
+               <td>Wrong Information:</td> 
               <td>#=addTrueFalseIconClassPopup(IsWrongInformation)#</td>	
          	</tr>
-          <tr>	
-              <td>YesNoFeedback:</td> 
-              <td>#=addTrueFalseIconClassPopup(YesNoFeedback)#</td>		
-              <td>missing field:</td> 
-              <td></td>		
+          <tr>
+              <td>Yes/No Feedback:</td> 
+              <td>#=addTrueFalseIconClassPopup(YesNoFeedback)#</td>	
+           </tr>
+          <tr>		
+              <td>Text Errors:</td> 
+              <td>#=addTrueFalseIconClassPopup(TextErrors)#</td>		
           </tr>
           <tr>
-              <td colspan='2'>Text:</td> 
-              <td colspan='2'>#=Text#</td>			
+              <td >Text:</td> 
+              <td >#=Text#</td>			
           </tr>
           <tr>
-              <td colspan='2'>Path:</td> 
-              <td colspan='2'>#=Path#</td>			
+              <td >Path:</td> 
+              <td >#=Path#</td>			
           </tr>
           <tr>
-              <td colspan='2'>Comments:</td> 
-              <td colspan='2'><textarea class="textAreaEditorDisabled" disabled="disabled">#=Comments#</textarea></td>			
+              <td >Comments:</td> 
+              <td ><textarea class="textAreaEditorDisabled" disabled="disabled">#= (Comments != undefined && Comments != '') ? Comments : '' #</textarea></td>			
           </tr>
           <tr>
-              <td colspan='2'>New Comments:</td> 
-              <td colspan='2'><textarea class="k-textbox textAreaEditor" id="newComment"/></td>			
+              <td >New Comments:</td> 
+              <td ><textarea class="k-textbox textAreaEditor" id="newComment"/></td>			
           </tr>
           <tr>
-              <td colspan='2'>Status:</td> 
-              <td colspan='2'><input data-role="dropdownlist" data-source='["New", "InProgress", "Completed"]' data-bind="value:Status" style="width: 30%;"/>
+              <td >Status:</td> 
+              <td ><input data-role="dropdownlist" data-source='["New", "InProgress", "Completed"]' data-bind="value:Status" style="width: 30%;"/>
       				</td>			
           </tr>
-          <tr>
-              <td colspan='2'>Send Email</td> 
-              <td colspan='2'>#=Email#</td>			
+          <tr class="#= Email == '' || Email == undefined    ? 'hiddenRow' : '' # ">
+              <td >Send Email</td> 
+              <td ><a href='mailto:#= Email #'>Reply to #= Email #</a> </td>			
           </tr>
           <tr>
-              <td colspan='2'>Last Modified:</td> 
-              <td colspan='2'><span> Created at #= kendo.format('{0:dd/MM/yyyy}', CreatedAt) # by #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span></td>			
+              <td >Last Modified:</td> 
+              <td ><span>#= kendo.format('{0:dd/MM/yyyy}', CreatedAt) #, #= ModifiedByUser == undefined ? 'N/A' : ModifiedByUser  #</span></td>			
           </tr>
         </table>
     </script>
